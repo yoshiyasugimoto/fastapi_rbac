@@ -1,0 +1,41 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./backend:/app
+    environment:
+      DATABASE_URL: postgresql://postgres:deadbeef@postgres:1234/postgres
+    depends_on:
+      - postgres
+    tty: true
+    stdin_open: true
+    command:
+      [
+        "poetry",
+        "run",
+        "uvicorn",
+        "app.main:app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8888",
+        "--reload",
+        "--log-level",
+        "info",
+      ]
+
+  postgres:
+    image: postgres:14
+    volumes:
+      - postgres:/var/lib/postgresql/data
+      - ./postgres/initdb.d:/docker-entrypoint-initdb.d
+    ports:
+      - 1234:1234
+    environment:
+      POSTGRES_PASSWORD: deadbeef
+
+volumes:
+  postgres:
